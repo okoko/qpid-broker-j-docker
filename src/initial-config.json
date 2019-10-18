@@ -30,31 +30,11 @@
       "password" : "guest"
     } ]
   } ],
-    "brokerloggers" : [ {
-    "name" : "logfile",
-    "type" : "File",
-    "fileName" : "${qpid.work_dir}${file.separator}log${file.separator}qpid.log",
-    "brokerloginclusionrules" : [ {
-      "name" : "Root",
-      "type" : "NameAndLevel",
-      "level" : "WARN",
-      "loggerName" : "ROOT"
-    }, {
-      "name" : "Qpid",
-      "type" : "NameAndLevel",
-      "level" : "INFO",
-      "loggerName" : "org.apache.qpid.*"
-    }, {
-      "name" : "Operational",
-      "type" : "NameAndLevel",
-      "level" : "INFO",
-      "loggerName" : "qpid.message.*"
-    }, {
-      "name" : "Statistics",
-      "type" : "NameAndLevel",
-      "level" : "INFO",
-      "loggerName" : "qpid.statistics.*"
-    } ]
+  "brokerloggers" : [ {
+    "id" : "0994b253-9057-4c80-b2fd-e95dcdcbfaf5",
+    "name" : "console",
+    "type" : "Console",
+    "context" : { }
   }, {
     "name" : "memory",
     "type" : "Memory",
