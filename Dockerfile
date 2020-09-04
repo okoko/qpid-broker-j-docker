@@ -1,4 +1,4 @@
-# Copyright 2019 Marko Kohtala <marko.kohtala@okoko.fi>
+# Copyright 2020 Marko Kohtala <marko.kohtala@okoko.fi>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
 
 # ARG usage documentation
 # https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
-ARG broker=7.1.5
+ARG broker=8.0.0
 ARG mirror=http://www.nic.funet.fi/pub/mirrors/apache.org/qpid
 ARG upstream=https://www.apache.org/dist/qpid
-
-# New OpenJDK come out every 6 months and support for older releases is
 # short, currently for OpenJDK 11 and up.
-# https://wiki.openjdk.java.net/display/JDKUpdates
-# OpenJDK 8 has a separate maintenance project so we can still use it
-# https://wiki.openjdk.java.net/display/jdk8u
-FROM openjdk:8-jre-alpine AS openjdk
+# https://openjdk.java.net/projects/jdk/14/
+FROM openjdk:14-alpine3.10 AS openjdk
 
 
 FROM openjdk AS unpack
@@ -32,19 +28,14 @@ COPY KEYS .
 RUN gpg --import KEYS
 ARG broker
 ARG upstream
-RUN curl -LOsS ${upstream}/broker-j/${broker}/binaries/apache-qpid-broker-j-${broker}-bin.tar.gz.asc
+RUN curl -fLOsS ${upstream}/broker-j/${broker}/binaries/apache-qpid-broker-j-${broker}-bin.tar.gz.asc
 ARG mirror
-RUN curl -LOsS ${mirror}/broker-j/${broker}/binaries/apache-qpid-broker-j-${broker}-bin.tar.gz
+RUN curl -fLOsS ${mirror}/broker-j/${broker}/binaries/apache-qpid-broker-j-${broker}-bin.tar.gz
 RUN gpg --verify apache-qpid-broker-j-${broker}-bin.tar.gz.asc apache-qpid-broker-j-${broker}-bin.tar.gz
-RUN tar zxf apache-qpid-broker-j-${broker}-bin.tar.gz
+RUN tar zxof apache-qpid-broker-j-${broker}-bin.tar.gz
 
 
 FROM openjdk
-
-ARG broker
-ARG mirror
-ARG upstream
-ARG home
 
 # QPid broker startup scripts use bash
 RUN apk add --no-cache bash
@@ -58,9 +49,11 @@ VOLUME [ "${QPID_WORK}" ]
 
 ENV QPID_HOME=/usr/local
 WORKDIR "${QPID_HOME}"
+ARG broker
 COPY --from=unpack /qpid-broker/${broker} ./
 COPY src/docker-entrypoint.sh /
 COPY src/initial-config.json /etc/qpid/
+COPY LICENSE ./
 
 USER qpidd
 EXPOSE 5672 8080
@@ -68,7 +61,7 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 # For AMQP 1.0 provide some simple policies for ease of use.
 # The patterns are POSIX Basic regular expressions matching the address.
 # Use ^ and $ to avoid match anywhere in middle of string.
-CMD ["bin/qpid-server"]
+CMD ["qpid-server"]
 
 # See https://github.com/opencontainers/image-spec/blob/master/annotations.md
 LABEL org.opencontainers.image.authors="Marko Kohtala <marko.kohtala@okoko.fi>"
