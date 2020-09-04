@@ -31,13 +31,15 @@ if [ "$1" = "qpid-server" ]; then
     [ "$QPIDD_STORE_TYPE" ] && set -- "$@" --store-type "$QPIDD_STORE_TYPE"
 
     # Copy config properties from environment to command line
-    env | while IFS== read name value
+    while IFS== read name value
     do
         case "$name" in
             QPIDD_CONFIG_*)
                 set -- "$@" --config-property "${name#QPIDD_CONFIG_}=$value" ;;
         esac
-    done
+    done <<END
+$(env)
+END
 fi
 
 exec "$@"
